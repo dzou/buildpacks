@@ -85,7 +85,12 @@ func buildFn(ctx *gcp.Context) error {
 		}
 	}
 
+	ctx.Exec([]string{mvn, "-v"}, gcp.WithStdoutTail, gcp.WithUserAttribution)
+
 	command := []string{mvn, "clean", "package", "--batch-mode", "-DskipTests"}
+	if _, ok := os.LookupEnv("ENABLE_GRAALVM"); ok {
+		command = append(command, "-P native")
+	}
 
 	if buildArgs := os.Getenv(env.BuildArgs); buildArgs != "" {
 		if strings.Contains(buildArgs, "maven.repo.local") {
@@ -94,10 +99,14 @@ func buildFn(ctx *gcp.Context) error {
 		command = append(command, buildArgs)
 	}
 
-	if !ctx.Debug() && !devmode.Enabled(ctx) {
-		command = append(command, "--quiet")
-	}
+	//if !ctx.Debug() && !devmode.Enabled(ctx) {
+	//	command = append(command, "--quiet")
+	//}
 
+	//command = []string{
+	//	"/layers/google.java.graalvm/java-graalvm/lib/svm/bin/native-image",
+	//	"-cp",  "--no-fallback", "--no-server", "--enable-https", "--enable-http",
+	//	"-H:Class=com.google.cloud.functions.invoker.runner.Invoker"}
 	ctx.Exec(command, gcp.WithStdoutTail, gcp.WithUserAttribution)
 
 	// Store the build steps in a script to be run on each file change.

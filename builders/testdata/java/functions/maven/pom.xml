@@ -7,6 +7,12 @@
   <artifactId>hello-world-function</artifactId>
   <version>1</version>
 
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>google-cloud-graalvm-support</module>
+  </modules>
+
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>11</maven.compiler.source>
@@ -18,12 +24,69 @@
       <groupId>com.google.cloud.functions</groupId>
       <artifactId>functions-framework-api</artifactId>
       <version>1.0.1</version>
-      <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.google.cloud.functions.invoker</groupId>
+      <artifactId>java-function-invoker</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-graalvm-support</artifactId>
+      <version>0.4.0-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>com.google.escapevelocity</groupId>
       <artifactId>escapevelocity</artifactId>
       <version>0.9.1</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.google.cloud.functions</groupId>
+        <artifactId>function-maven-plugin</artifactId>
+        <version>0.9.7</version>
+        <configuration>
+          <functionTarget>functions.HelloWorld</functionTarget>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>native</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>native-image-maven-plugin</artifactId>
+            <version>21.0.0.2</version>
+            <configuration>
+              <mainClass>com.google.cloud.functions.invoker.runner.Invoker</mainClass>
+              <buildArgs>
+                --no-fallback
+                --no-server
+                --enable-https
+                --enable-http
+              </buildArgs>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>native-image</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
