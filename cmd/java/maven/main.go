@@ -90,6 +90,12 @@ func buildFn(ctx *gcp.Context) error {
 	command := []string{mvn, "clean", "package", "--batch-mode", "-DskipTests"}
 	if _, ok := os.LookupEnv("ENABLE_GRAALVM"); ok {
 		command = append(command, "-P native")
+
+		// This section was just used to get the proof of concept working, not needed at the end.
+		installCmd := []string{mvn, "install:install-file", "-Dfile=lib/support.jar", "-DgroupId=com.google.cloud",
+			"-DartifactId=google-cloud-graalvm-support", "-Dversion=1.0.0", "-Dpackaging=jar", "-DgeneratePom=true"}
+		ctx.Exec(installCmd, gcp.WithStdoutTail, gcp.WithUserAttribution)
+
 	}
 
 	if buildArgs := os.Getenv(env.BuildArgs); buildArgs != "" {
@@ -99,9 +105,9 @@ func buildFn(ctx *gcp.Context) error {
 		command = append(command, buildArgs)
 	}
 
-	//if !ctx.Debug() && !devmode.Enabled(ctx) {
-	//	command = append(command, "--quiet")
-	//}
+	if !ctx.Debug() && !devmode.Enabled(ctx) {
+		command = append(command, "--quiet")
+	}
 
 	//command = []string{
 	//	"/layers/google.java.graalvm/java-graalvm/lib/svm/bin/native-image",
