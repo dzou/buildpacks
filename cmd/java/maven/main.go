@@ -109,10 +109,6 @@ func buildFn(ctx *gcp.Context) error {
 		command = append(command, "--quiet")
 	}
 
-	//command = []string{
-	//	"/layers/google.java.graalvm/java-graalvm/lib/svm/bin/native-image",
-	//	"-cp",  "--no-fallback", "--no-server", "--enable-https", "--enable-http",
-	//	"-H:Class=com.google.cloud.functions.invoker.runner.Invoker"}
 	ctx.Exec(command, gcp.WithStdoutTail, gcp.WithUserAttribution)
 
 	// Store the build steps in a script to be run on each file change.
